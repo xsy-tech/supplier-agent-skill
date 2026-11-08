@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    {{printf "%q" .ServerName}}: {
+      "type": "streamableHttp",
+      "url": {{printf "%q" .Endpoint}},
+      "headers": {
+        "Authorization": "Bearer ${SUPPLIER_OPEN_API_KEY}"
+      }
+    }
+  }
+}

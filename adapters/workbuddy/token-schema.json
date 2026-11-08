@@ -1,0 +1,11 @@
+{
+  "fields": [
+    {
+      "key": "SUPPLIER_OPEN_API_KEY",
+      "label": "供应商个人 API Key / Personal supplier API Key",
+      "type": "password",
+      "required": true,
+      "placeholder": "请输入供应商 API Key / Enter your personal supplier API Key"
+    }
+  ]
+}

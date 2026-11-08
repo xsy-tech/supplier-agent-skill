@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+
+message_file="${1:?commit message file is required}"
+hook_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+. "$hook_dir/commit-message-policy.sh"
+
+message="$(sed '/^[[:space:]]*#/d' "$message_file")"
+validate_commit_message "$message"

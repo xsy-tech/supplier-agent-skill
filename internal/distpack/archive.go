@@ -1,0 +1,252 @@
+package distpack
+
+import (
+	"archive/tar"
+	"archive/zip"
+	"compress/flate"
+	"compress/gzip"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path"
+	"path/filepath"
+	"sort"
+	"strings"
+	"time"
+	"unicode"
+)
+
+const (
+	FormatTarGzip = "tar.gz"
+	FormatZIP     = "zip"
+)
+
+var archiveTime = time.Date(1980, time.January, 1, 0, 0, 0, 0, time.UTC)
+
+type Options struct {
+	Format     string
+	SourceDir  string
+	OutputPath string
+	RootName   string
+	BinaryName string
+}
+
+type archiveEntry struct {
+	name string
+	mode os.FileMode
+	data []byte
+}
+
+func Write(options Options) (err error) {
+	entries, err := loadEntries(options)
+	if err != nil {
+		return err
+	}
+
+	output, err := os.Create(options.OutputPath)
+	if err != nil {
+		return fmt.Errorf("create output: %w", err)
+	}
+	complete := false
+	defer func() {
+		if closeErr := output.Close(); err == nil && closeErr != nil {
+			err = fmt.Errorf("close output: %w", closeErr)
+		}
+		if !complete || err != nil {
+			_ = os.Remove(options.OutputPath)
+		}
+	}()
+
+	switch options.Format {
+	case FormatTarGzip:
+		err = writeTarGzip(output, entries)
+	case FormatZIP:
+		err = writeZIP(output, entries)
+	default:
+		err = fmt.Errorf("unsupported format %q", options.Format)
+	}
+	if err != nil {
+		return err
+	}
+	complete = true
+	return nil
+}
+
+func loadEntries(options Options) ([]archiveEntry, error) {
+	if options.SourceDir == "" || options.OutputPath == "" {
+		return nil, fmt.Errorf("source and output paths are required")
+	}
+	if !validArchiveName(options.RootName) {
+		return nil, fmt.Errorf("invalid archive root %q", options.RootName)
+	}
+	if !validArchiveName(options.BinaryName) {
+		return nil, fmt.Errorf("invalid binary name %q", options.BinaryName)
+	}
+	sourceDir, err := filepath.Abs(options.SourceDir)
+	if err != nil {
+		return nil, fmt.Errorf("resolve source directory: %w", err)
+	}
+
+	files := []struct {
+		name string
+		mode os.FileMode
+	}{
+		{name: "LICENSE", mode: 0o644},
+		{name: "README.md", mode: 0o644},
+		{name: "README.en.md", mode: 0o644},
+		{name: "manifest.json", mode: 0o644},
+		{name: options.BinaryName, mode: 0o755},
+	}
+	entries := make([]archiveEntry, 0, len(files))
+	for _, file := range files {
+		sourcePath := filepath.Join(sourceDir, file.name)
+		if filepath.Dir(sourcePath) != sourceDir {
+			return nil, fmt.Errorf("source path %q is not directly under source directory", file.name)
+		}
+		data, err := os.ReadFile(sourcePath)
+		if err != nil {
+			return nil, fmt.Errorf("read %s: %w", file.name, err)
+		}
+		entries = append(entries, archiveEntry{
+			name: path.Join(options.RootName, file.name),
+			mode: file.mode,
+			data: data,
+		})
+	}
+	// Bundle offline resources without changing the canonical base-file order.
+	var extras []archiveEntry
+	for _, name := range []string{"SKILL.md", "agents", "docs", "references"} {
+		base := filepath.Join(sourceDir, name)
+		if _, err := os.Lstat(base); os.IsNotExist(err) {
+			continue
+		} else if err != nil {
+			return nil, err
+		}
+		err := filepath.WalkDir(base, func(file string, entry fs.DirEntry, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			if entry.IsDir() {
+				return nil
+			}
+			info, err := entry.Info()
+			if err != nil {
+				return err
+			}
+			if !info.Mode().IsRegular() {
+				return fmt.Errorf("offline resource must be a regular file")
+			}
+			relative, err := filepath.Rel(sourceDir, file)
+			if err != nil {
+				return err
+			}
+			data, err := os.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			extras = append(extras, archiveEntry{name: path.Join(options.RootName, filepath.ToSlash(relative)), mode: 0644, data: data})
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	sort.Slice(extras, func(i, j int) bool { return extras[i].name < extras[j].name })
+	entries = append(entries, extras...)
+	return entries, nil
+}
+
+func validArchiveName(name string) bool {
+	if name == "" || name == "." || name == ".." ||
+		filepath.IsAbs(name) || filepath.VolumeName(name) != "" ||
+		strings.ContainsAny(name, `/\`) || hasWindowsDrivePrefix(name) {
+		return false
+	}
+	for _, character := range name {
+		if unicode.IsControl(character) {
+			return false
+		}
+	}
+	return true
+}
+
+func hasWindowsDrivePrefix(name string) bool {
+	if len(name) < 2 || name[1] != ':' {
+		return false
+	}
+	letter := name[0]
+	return letter >= 'A' && letter <= 'Z' || letter >= 'a' && letter <= 'z'
+}
+
+func writeTarGzip(output io.Writer, entries []archiveEntry) error {
+	gzipWriter, err := gzip.NewWriterLevel(output, gzip.BestCompression)
+	if err != nil {
+		return fmt.Errorf("create gzip writer: %w", err)
+	}
+	gzipWriter.Header.ModTime = time.Time{}
+	gzipWriter.Header.Name = ""
+	gzipWriter.Header.Comment = ""
+	gzipWriter.Header.Extra = nil
+	gzipWriter.Header.OS = 255
+
+	tarWriter := tar.NewWriter(gzipWriter)
+	for _, entry := range entries {
+		header := &tar.Header{
+			Name:     entry.name,
+			Mode:     int64(entry.mode),
+			Size:     int64(len(entry.data)),
+			ModTime:  archiveTime,
+			Typeflag: tar.TypeReg,
+			Uid:      0,
+			Gid:      0,
+			Uname:    "root",
+			Gname:    "root",
+			Format:   tar.FormatUSTAR,
+		}
+		if err := tarWriter.WriteHeader(header); err != nil {
+			_ = gzipWriter.Close()
+			return fmt.Errorf("write tar header %s: %w", entry.name, err)
+		}
+		if _, err := tarWriter.Write(entry.data); err != nil {
+			_ = gzipWriter.Close()
+			return fmt.Errorf("write tar payload %s: %w", entry.name, err)
+		}
+	}
+	if err := tarWriter.Close(); err != nil {
+		_ = gzipWriter.Close()
+		return fmt.Errorf("close tar writer: %w", err)
+	}
+	if err := gzipWriter.Close(); err != nil {
+		return fmt.Errorf("close gzip writer: %w", err)
+	}
+	return nil
+}
+
+func writeZIP(output io.Writer, entries []archiveEntry) error {
+	zipWriter := zip.NewWriter(output)
+	zipWriter.RegisterCompressor(zip.Deflate, func(writer io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(writer, flate.BestCompression)
+	})
+	for _, entry := range entries {
+		header := &zip.FileHeader{
+			Name:   entry.name,
+			Method: zip.Deflate,
+		}
+		header.SetMode(entry.mode)
+		header.SetModTime(archiveTime)
+		writer, err := zipWriter.CreateHeader(header)
+		if err != nil {
+			_ = zipWriter.Close()
+			return fmt.Errorf("write zip header %s: %w", entry.name, err)
+		}
+		if _, err := writer.Write(entry.data); err != nil {
+			_ = zipWriter.Close()
+			return fmt.Errorf("write zip payload %s: %w", entry.name, err)
+		}
+	}
+	if err := zipWriter.Close(); err != nil {
+		return fmt.Errorf("close zip writer: %w", err)
+	}
+	return nil
+}

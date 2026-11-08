@@ -1,0 +1,4 @@
+interface:
+  display_name: "供应商开放平台"
+  short_description: "查询面料或成衣供应商身份，并使用当前 MCP 连接实际授予的供应商业务能力"
+  default_prompt: "使用 $supplier-open-platform 查询当前供应商身份并核对可用能力。"

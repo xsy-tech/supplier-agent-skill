@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+version=$(cd "$root" && go run ./cmd/supplier-skill version | awk '{print $2}')
+dist="$root/dist"
+stage="$dist/.stage"
+
+rm -rf "$dist"
+mkdir -p "$stage"
+
+targets=(
+  darwin/arm64
+  darwin/amd64
+  linux/arm64
+  linux/amd64
+  windows/amd64
+)
+
+for target in "${targets[@]}"; do
+  os=${target%/*}
+  arch=${target#*/}
+  name="supplier-agent-skill_${version}_${os}_${arch}"
+  package_dir="$stage/$name"
+  mkdir -p "$package_dir"
+  binary="$package_dir/supplier-skill"
+  if [[ "$os" == "windows" ]]; then
+    binary+=".exe"
+  fi
+  (
+    cd "$root"
+    CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath -buildvcs=false -o "$binary" ./cmd/supplier-skill
+  )
+  cp "$root/README.md" "$root/README.en.md" "$root/LICENSE" "$root/manifest.json" "$package_dir/"
+  cp -R "$root/SKILL.md" "$root/agents" "$root/docs" "$root/references" "$package_dir/"
+  if [[ "$os" == "windows" ]]; then
+    archive_format=zip
+    archive_path="$dist/$name.zip"
+    binary_name=supplier-skill.exe
+  else
+    archive_format=tar.gz
+    archive_path="$dist/$name.tar.gz"
+    binary_name=supplier-skill
+  fi
+  (
+    cd "$root"
+    go run ./cmd/distpack \
+      -format "$archive_format" \
+      -source "$package_dir" \
+      -output "$archive_path" \
+      -root "$name" \
+      -binary "$binary_name"
+  )
+done
+
+rm -rf "$stage"
+(
+  cd "$dist"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum ./*.tar.gz ./*.zip > checksums.txt
+  else
+    shasum -a 256 ./*.tar.gz ./*.zip > checksums.txt
+  fi
+)

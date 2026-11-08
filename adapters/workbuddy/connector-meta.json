@@ -1,0 +1,14 @@
+{
+  "id": "supplier-open-platform",
+  "name": "供应商开放平台 / Supplier Open Platform",
+  "description": "使用已授权的供应商 MCP 能力 / Use authorized supplier MCP capabilities",
+  "version": "0.1.0",
+  "vendor": "XSN",
+  "min_workbuddy_version": "4.23.0",
+  "tags": [
+    "supplier",
+    "openapi",
+    "mcp"
+  ],
+  "auth_mode": "token"
+}
