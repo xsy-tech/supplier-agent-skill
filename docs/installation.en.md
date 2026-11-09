@@ -2,11 +2,33 @@
 
 [中文](installation.md)
 
+For Agent-assisted installation, copy the [installation prompt](agent-install-prompts.en.md). This page is the detailed manual reference.
+
 Build with `make build`, then run `./bin/supplier-skill`. Alternatively verify the supplied `dist/checksums.txt` and extract the appropriate precompiled archive. Use `sha256sum -c checksums.txt`, macOS `shasum -a 256 -c checksums.txt`, or Windows `Get-FileHash -Algorithm SHA256`. Place the binary on your personal PATH.
 
-[Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) provides precompiled packages in the private repository. Use authenticated `gh release download` as shown in [README](../README.en.md) and verify all downloaded packages. For a directly accessible administrator mirror, set `SUPPLIER_SKILL_RELEASE_BASE_URL` before `bash scripts/install.sh`, or pass `-BaseUrl` to `scripts/install.ps1`. Version defaults to `0.1.1`; `SUPPLIER_SKILL_INSTALL_DIR` overrides the default personal `.local/bin`. Mirror scripts do not carry GitHub account tokens; use authenticated `gh` for private GitHub assets.
+[Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) provides precompiled packages in the private repository. Use authenticated `gh release download` as shown below and verify downloaded packages. For a directly accessible administrator mirror, set `SUPPLIER_SKILL_RELEASE_BASE_URL` before `bash scripts/install.sh`, or pass `-BaseUrl` to `scripts/install.ps1`. Version defaults to `0.1.1`; `SUPPLIER_SKILL_INSTALL_DIR` overrides the default personal `.local/bin`. Mirror scripts do not carry GitHub account tokens; use authenticated `gh` for private GitHub assets.
 
-Use the hidden Bash input in [README](../README.en.md). The connection commands require `--domain fabric|garment`, a matching `/fabric/mcp` or `/garment/mcp` URL and `--key-stdin`. Select `codex`, `claude-code` or `workbuddy`. URLs must use HTTPS except loopback development, and cannot embed credentials, query strings or fragments. Literal Key command arguments are rejected.
+Use the local hidden-input example below. The connection commands require `--domain fabric|garment`, a matching `/fabric/mcp` or `/garment/mcp` URL and `--key-stdin`. Select `codex`, `claude-code` or `workbuddy`. URLs must use HTTPS except loopback development, and cannot embed credentials, query strings or fragments. Literal Key command arguments are rejected.
+
+Download with an authorized GitHub login:
+
+```bash
+gh release download v0.1.1 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
+cd supplier-release
+shasum -a 256 -c checksums.txt
+```
+
+This downloads all assets. If downloading only your platform archive and the manifest, verify that archive's checksum individually.
+
+With the CLI on your PATH, replace the example URL and enter the Key locally:
+
+```bash
+MCP_URL='https://supplier-open.example.com/garment/mcp'
+IFS= read -r -s -p 'Supplier API Key: ' SUPPLIER_INSTALL_KEY; printf '\n'
+printf '%s\n' "$SUPPLIER_INSTALL_KEY" | supplier-skill install codex --domain garment --url "$MCP_URL" --key-stdin
+unset SUPPLIER_INSTALL_KEY
+supplier-skill doctor codex --domain garment
+```
 
 For Windows PowerShell, the [Chinese installation page](installation.md) includes a language-independent SecureString/BSTR example, with explicit buffer cleanup. Never put the Key in chat or command history.
 

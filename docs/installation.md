@@ -2,15 +2,27 @@
 
 [English](installation.en.md)
 
+不想手动操作时，直接复制[Agent 安装提示词](agent-install-prompts.md)。以下内容供手动安装或 Agent 执行时参考。
+
 ## 安装 CLI
 
-从 [GitHub Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) 获取预编译包，或从仓库构建。私有仓库需要具备访问权限的 GitHub 账号；可按 [README](../README.md) 用 `gh release download` 下载全部五个平台包及清单。从源码：`make build`，然后使用 `./bin/supplier-skill`。从预编译包：先用 `sha256sum -c checksums.txt` 或 macOS `shasum -a 256 -c checksums.txt` 校验管理员提供的安装包与清单，再解压适合本机的包，把 `supplier-skill` 放到个人 PATH。Windows 解压 ZIP，将 `supplier-skill.exe` 放到个人 PATH；可用 `Get-FileHash -Algorithm SHA256` 比较清单。
+从 [GitHub Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) 获取预编译包，或从仓库构建。私有仓库需要具备访问权限的 GitHub 账号；可使用下面的命令下载全部五个平台包及清单。从源码：`make build`，然后使用 `./bin/supplier-skill`。从预编译包：先用 `sha256sum -c checksums.txt` 或 macOS `shasum -a 256 -c checksums.txt` 校验管理员提供的安装包与清单，再解压适合本机的包，把 `supplier-skill` 放到个人 PATH。Windows 解压 ZIP，将 `supplier-skill.exe` 放到个人 PATH；可用 `Get-FileHash -Algorithm SHA256` 比较清单。
 
 若需使用可直接下载的管理员镜像目录，Bash 可设置 `SUPPLIER_SKILL_RELEASE_BASE_URL` 并运行 `bash scripts/install.sh`；Windows 运行 `./scripts/install.ps1 -BaseUrl <管理员下载目录>`。脚本选择平台、下载并校验 SHA-256，再安装至用户 `.local/bin`。可配置 `SUPPLIER_SKILL_INSTALL_DIR`，版本默认 `0.1.1`。镜像脚本不携带 GitHub 个人凭证；私有 GitHub Release 使用已登录的 `gh` 下载。
 
+### 下载和源码构建命令
+
+```bash
+gh release download v0.1.1 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
+cd supplier-release
+shasum -a 256 -c checksums.txt  # Linux 可用 sha256sum -c checksums.txt
+```
+
+先确认 `gh` 已登录具备仓库权限的账号。以上命令下载全部资产；若只下载本机包，单独核对 `checksums.txt` 中该包的 SHA-256。源码构建需 Go（版本见 `go.mod`），在仓库目录运行 `make install-hooks`、`make check`、`make build`，再使用 `./bin/supplier-skill`。
+
 ## 连接三个客户端
 
-[README](../README.md) 提供 Bash 隐藏输入示例。参数 `--domain fabric|garment` 必填，地址必须匹配 `/fabric/mcp` 或 `/garment/mcp`；仅本机回环允许 HTTP，其他地址要求 HTTPS。不允许 URL 中携带用户名、密码、查询串和片段，不接受命令行明文 Key。
+Bash 隐藏输入示例见下方。参数 `--domain fabric|garment` 必填，地址必须匹配 `/fabric/mcp` 或 `/garment/mcp`；仅本机回环允许 HTTP，其他地址要求 HTTPS。不允许 URL 中携带用户名、密码、查询串和片段，不接受命令行明文 Key。
 
 ```text
 supplier-skill install codex --domain garment --url https://supplier-open.example.com/garment/mcp --key-stdin
@@ -18,7 +30,17 @@ supplier-skill install claude-code --domain garment --url https://supplier-open.
 supplier-skill install workbuddy --domain garment --url https://supplier-open.example.com/garment/mcp --key-stdin
 ```
 
-标准输入必须来自本地隐藏输入。Windows PowerShell 示例：
+标准输入必须来自本地隐藏输入。Bash 示例（先把地址替换为管理员提供的值）：
+
+```bash
+MCP_URL='https://supplier-open.example.com/garment/mcp'
+IFS= read -r -s -p '供应商 API Key: ' SUPPLIER_INSTALL_KEY; printf '\n'
+printf '%s\n' "$SUPPLIER_INSTALL_KEY" | supplier-skill install codex --domain garment --url "$MCP_URL" --key-stdin
+unset SUPPLIER_INSTALL_KEY
+supplier-skill doctor codex --domain garment
+```
+
+Windows PowerShell 示例：
 
 ```powershell
 $secret = Read-Host 'Supplier API Key' -AsSecureString
