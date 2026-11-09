@@ -2,7 +2,7 @@
 
 中文 | [English](README.en.md)
 
-供应商专用的独立 Agent Skill 与 Go 安装器，参考 ERP Agent Skill 的设计，支持 Codex、Claude Code 和 WorkBuddy。版本 `0.1.0`；当前交付源码和本地安装包，尚未发布远程仓库或 Release。
+供应商专用的独立 Agent Skill 与 Go 安装器，参考 ERP Agent Skill 的设计，支持 Codex、Claude Code 和 WorkBuddy。版本 `0.1.0`；[GitHub 仓库](https://github.com/xsy-tech/supplier-agent-skill)提供源码，[Release v0.1.0](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.0)提供预编译包。仓库为私有，需要访问权限。
 
 一份 `supplier-open-platform` Skill 支持两个独立 MCP 连接，可与 ERP 的 `erp-open` 同时安装：
 
@@ -12,6 +12,18 @@
 | `garment` | `/garment/mcp` | `supplier-garment` | `get_garment_supplier_identity` |
 
 **首版服务只开放当前供应商身份查询。** 订单、报价、发货能力尚未开放；后续能力以当前 MCP `tools/list` 和服务端授权为准。
+
+## 下载 Release 安装包
+
+先通过 `gh auth login` 登录具备仓库访问权限的 GitHub 账号，再下载版本包：
+
+```bash
+gh release download v0.1.0 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
+cd supplier-release
+shasum -a 256 -c checksums.txt  # Linux 也可使用 sha256sum -c checksums.txt
+```
+
+此命令下载五个平台包和校验清单，校验后解压适合本机的包，将 `supplier-skill` 放到个人 PATH。Windows 使用 ZIP 和 `Get-FileHash -Algorithm SHA256` 核对清单。不具备仓库权限时，请管理员提供安装包或授权访问；匿名下载私有 Release 不可用。
 
 ## 构建和本地安装
 
@@ -38,7 +50,7 @@ unset SUPPLIER_INSTALL_KEY
 ./bin/supplier-skill doctor codex --domain garment
 ```
 
-Claude Code 将 `codex` 换成 `claude-code`；WorkBuddy 换成 `workbuddy`。面料使用 `--domain fabric` 和 `/fabric/mcp` 地址。两端分别安装、分别使用对应 Key；不得混用。
+若已从 Release 安装到 PATH，下列 `./bin/supplier-skill` 均可改为 `supplier-skill`。Claude Code 将 `codex` 换成 `claude-code`；WorkBuddy 换成 `workbuddy`。面料使用 `--domain fabric` 和 `/fabric/mcp` 地址。两端分别安装、分别使用对应 Key；不得混用。
 
 安装将凭证保存在用户级私有 MCP 配置，Unix 文件权限 `0600`，不经过客户端命令参数。重启客户端后正常打开 Codex、Claude Code 或 WorkBuddy 即可；不需要特殊启动器。安装不改变其他 MCP 配置。
 
@@ -61,4 +73,4 @@ Claude Code 将 `codex` 换成 `claude-code`；WorkBuddy 换成 `workbuddy`。�
 - [Skill 指令](SKILL.md)、[工作流](references/workflows.md)、[错误处理](references/errors.md)
 - [本地验证记录](docs/verification.md)
 
-维护者发布前需明确远程目标。安装脚本要求提供 `SUPPLIER_SKILL_RELEASE_BASE_URL`（PowerShell 为 `-BaseUrl`），发布命令要求 `REPO=owner/repository`；没有默认的假定公开下载地址。软件版权和分发条件见 [LICENSE](LICENSE)。
+发布默认目标为 `xsy-tech/supplier-agent-skill`。私有仓库推荐通过已登录的 `gh` 下载；如果管理员提供了可直接下载的镜像目录，安装脚本可用 `SUPPLIER_SKILL_RELEASE_BASE_URL`（PowerShell 为 `-BaseUrl`）指定。软件版权和分发条件见 [LICENSE](LICENSE)。

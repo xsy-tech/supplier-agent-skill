@@ -3,7 +3,7 @@ set -euo pipefail
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root"
-repo=${RELEASE_REPO:?Set RELEASE_REPO to the approved GitHub owner/repository}
+repo=${RELEASE_REPO:-xsy-tech/supplier-agent-skill}
 
 fail() {
   printf 'Release error: %s\n' "$*" >&2

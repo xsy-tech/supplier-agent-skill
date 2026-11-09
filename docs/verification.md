@@ -1,8 +1,8 @@
-# 本地验证记录 / Local verification
+# 本地与发布验证 / Local and release verification
 
 日期：2026-11-09；版本：0.1.0；工单：GYXT-35342。
 
-当前交付是独立本地 Git 仓库、源码、嵌入式 Skill 和五个平台安装包。未配置远程，未发布 Release，未使用真实供应商 Key，也未对生产环境执行联调。
+发布目标为私有仓库 [xsy-tech/supplier-agent-skill](https://github.com/xsy-tech/supplier-agent-skill)，版本 `v0.1.0` 包含源码、嵌入式 Skill、五个平台安装包和 SHA-256 清单。发布前重新执行下列验证；发布后还会下载 Release 资产，逐一比对校验和并运行本机包。未使用真实供应商 Key，也未对生产环境执行联调。
 
 ## 验证范围
 
