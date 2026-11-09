@@ -4,9 +4,9 @@
 
 ## 安装 CLI
 
-从 [GitHub Release v0.1.0](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.0) 获取预编译包，或从仓库构建。私有仓库需要具备访问权限的 GitHub 账号；可按 [README](../README.md) 用 `gh release download` 下载全部五个平台包及清单。从源码：`make build`，然后使用 `./bin/supplier-skill`。从预编译包：先用 `sha256sum -c checksums.txt` 或 macOS `shasum -a 256 -c checksums.txt` 校验管理员提供的安装包与清单，再解压适合本机的包，把 `supplier-skill` 放到个人 PATH。Windows 解压 ZIP，将 `supplier-skill.exe` 放到个人 PATH；可用 `Get-FileHash -Algorithm SHA256` 比较清单。
+从 [GitHub Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) 获取预编译包，或从仓库构建。私有仓库需要具备访问权限的 GitHub 账号；可按 [README](../README.md) 用 `gh release download` 下载全部五个平台包及清单。从源码：`make build`，然后使用 `./bin/supplier-skill`。从预编译包：先用 `sha256sum -c checksums.txt` 或 macOS `shasum -a 256 -c checksums.txt` 校验管理员提供的安装包与清单，再解压适合本机的包，把 `supplier-skill` 放到个人 PATH。Windows 解压 ZIP，将 `supplier-skill.exe` 放到个人 PATH；可用 `Get-FileHash -Algorithm SHA256` 比较清单。
 
-若需使用可直接下载的管理员镜像目录，Bash 可设置 `SUPPLIER_SKILL_RELEASE_BASE_URL` 并运行 `bash scripts/install.sh`；Windows 运行 `./scripts/install.ps1 -BaseUrl <管理员下载目录>`。脚本选择平台、下载并校验 SHA-256，再安装至用户 `.local/bin`。可配置 `SUPPLIER_SKILL_INSTALL_DIR`，版本默认 `0.1.0`。镜像脚本不携带 GitHub 个人凭证；私有 GitHub Release 使用已登录的 `gh` 下载。
+若需使用可直接下载的管理员镜像目录，Bash 可设置 `SUPPLIER_SKILL_RELEASE_BASE_URL` 并运行 `bash scripts/install.sh`；Windows 运行 `./scripts/install.ps1 -BaseUrl <管理员下载目录>`。脚本选择平台、下载并校验 SHA-256，再安装至用户 `.local/bin`。可配置 `SUPPLIER_SKILL_INSTALL_DIR`，版本默认 `0.1.1`。镜像脚本不携带 GitHub 个人凭证；私有 GitHub Release 使用已登录的 `gh` 下载。
 
 ## 连接三个客户端
 
@@ -60,3 +60,7 @@ supplier-skill install workbuddy --domain fabric --url https://supplier-open.exa
 ```
 
 此方式导出无真实 Key 的包；在 WorkBuddy 导入并通过 Token 界面填写。不可同时使用 `--key-stdin`。两领域使用不同 Connector 标识。默认仍推荐直接安装。
+
+### WorkBuddy 首次信任与验收
+
+安装并重启后，在“专家·技能·连接器 → 连接器 → 自定义连接器”确认两条供应商连接；分别按客户端提示信任对应服务器。每条连接当前应只显示本域身份工具。用新会话明确要求加载 `supplier-open-platform` 并调用该工具，核对域、主账号、租户、公司和 Client；面料还需核对区域。仅安装器 `VERIFIED` 不代表桌面会话已调用成功。授权或轮换后更新配置并重连；不要在连接器、终端或截图中展示 Key。详见[真实 WorkBuddy 实测](verification-workbuddy-2026-11-09.md)。

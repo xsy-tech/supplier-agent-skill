@@ -2,17 +2,19 @@
 
 [中文](README.md) | English
 
-Version `0.1.0` provides an independent supplier Skill and Go installer for Codex, Claude Code and WorkBuddy, based on the ERP Agent Skill design. [Source](https://github.com/xsy-tech/supplier-agent-skill) and [v0.1.0 release packages](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.0) are hosted in a private repository and require access.
+Version `0.1.1` provides an independent supplier Skill and Go installer for Codex, Claude Code and WorkBuddy, based on the ERP Agent Skill design. [Source](https://github.com/xsy-tech/supplier-agent-skill) and [v0.1.1 release packages](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) are hosted in a private repository and require access.
 
 Use `--domain fabric` with `/fabric/mcp` and `supplier-fabric`, or `--domain garment` with `/garment/mcp` and `supplier-garment`. Both connections share `supplier-open-platform` and coexist with ERP's `erp-open`.
 
 Initially the service exposes only `get_fabric_supplier_identity` or `get_garment_supplier_identity`. Order, quotation and shipment tools are not available yet. Runtime discovery and server grants determine future availability.
 
+WorkBuddy 5.3.11 passed **5/5 scoped native cases** using v0.1.0: Skill loading, tool discovery and both supplier identity calls. See [acceptance evidence](docs/verification-workbuddy-2026-11-09.en.md). Version v0.1.1 packages this evidence and updated guides; native and package verification versions are distinguished.
+
 Download all platform packages and checksums with an authorized GitHub account:
 
 ```bash
 gh auth login
-gh release download v0.1.0 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
+gh release download v0.1.1 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
 cd supplier-release
 shasum -a 256 -c checksums.txt  # or sha256sum -c checksums.txt
 ```

@@ -4,7 +4,7 @@
 
 Build with `make build`, then run `./bin/supplier-skill`. Alternatively verify the supplied `dist/checksums.txt` and extract the appropriate precompiled archive. Use `sha256sum -c checksums.txt`, macOS `shasum -a 256 -c checksums.txt`, or Windows `Get-FileHash -Algorithm SHA256`. Place the binary on your personal PATH.
 
-[Release v0.1.0](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.0) provides precompiled packages in the private repository. Use authenticated `gh release download` as shown in [README](../README.en.md) and verify all downloaded packages. For a directly accessible administrator mirror, set `SUPPLIER_SKILL_RELEASE_BASE_URL` before `bash scripts/install.sh`, or pass `-BaseUrl` to `scripts/install.ps1`. Version defaults to `0.1.0`; `SUPPLIER_SKILL_INSTALL_DIR` overrides the default personal `.local/bin`. Mirror scripts do not carry GitHub account tokens; use authenticated `gh` for private GitHub assets.
+[Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1) provides precompiled packages in the private repository. Use authenticated `gh release download` as shown in [README](../README.en.md) and verify all downloaded packages. For a directly accessible administrator mirror, set `SUPPLIER_SKILL_RELEASE_BASE_URL` before `bash scripts/install.sh`, or pass `-BaseUrl` to `scripts/install.ps1`. Version defaults to `0.1.1`; `SUPPLIER_SKILL_INSTALL_DIR` overrides the default personal `.local/bin`. Mirror scripts do not carry GitHub account tokens; use authenticated `gh` for private GitHub assets.
 
 Use the hidden Bash input in [README](../README.en.md). The connection commands require `--domain fabric|garment`, a matching `/fabric/mcp` or `/garment/mcp` URL and `--key-stdin`. Select `codex`, `claude-code` or `workbuddy`. URLs must use HTTPS except loopback development, and cannot embed credentials, query strings or fragments. Literal Key command arguments are rejected.
 
@@ -24,3 +24,7 @@ These read the saved domain-specific endpoint; `--url` can be explicit. WorkBudd
 Replace the CLI to upgrade, then rerun install. Inspect manually edited Skill files before using `--force`. Removal preserves other domains and other MCP servers, and only removes the shared Skill after the final supplier connection. Edited or unmanaged Skill files are protected.
 
 Optional WorkBuddy export: `supplier-skill install workbuddy --domain fabric --url https://supplier-open.example.com/fabric/mcp --output ./supplier-fabric-connector`. This contains no real Key; import it and enter the token locally in WorkBuddy. Do not combine export with `--key-stdin`.
+
+### First trust in WorkBuddy
+
+Restart after installation and inspect custom connectors under connector management. Approve each supplier server when prompted. Each currently exposes only its domain identity tool. In a new session, load `supplier-open-platform`, call that native tool and verify domain, account, tenant, company and Client; fabric also requires location. Installer `VERIFIED` alone does not prove native desktop execution. Reconnect after grants or credential changes. See [native acceptance](verification-workbuddy-2026-11-09.en.md). Never expose Keys in the UI, logs or screenshots.

@@ -2,7 +2,7 @@
 
 中文 | [English](README.en.md)
 
-供应商专用的独立 Agent Skill 与 Go 安装器，参考 ERP Agent Skill 的设计，支持 Codex、Claude Code 和 WorkBuddy。版本 `0.1.0`；[GitHub 仓库](https://github.com/xsy-tech/supplier-agent-skill)提供源码，[Release v0.1.0](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.0)提供预编译包。仓库为私有，需要访问权限。
+供应商专用的独立 Agent Skill 与 Go 安装器，参考 ERP Agent Skill 的设计，支持 Codex、Claude Code 和 WorkBuddy。版本 `0.1.1`；[GitHub 仓库](https://github.com/xsy-tech/supplier-agent-skill)提供源码，[Release v0.1.1](https://github.com/xsy-tech/supplier-agent-skill/releases/tag/v0.1.1)提供预编译包。仓库为私有，需要访问权限。
 
 一份 `supplier-open-platform` Skill 支持两个独立 MCP 连接，可与 ERP 的 `erp-open` 同时安装：
 
@@ -13,12 +13,14 @@
 
 **首版服务只开放当前供应商身份查询。** 订单、报价、发货能力尚未开放；后续能力以当前 MCP `tools/list` 和服务端授权为准。
 
+WorkBuddy 5.3.11 已完成 v0.1.0 原生 Skill 加载及两端身份工具实测，限定场景 **5/5 通过**，见[记录与截图](docs/verification-workbuddy-2026-11-09.md)。v0.1.1 收录该证据并更新接入文档；原生测试版本与本次包校验分别标明。
+
 ## 下载 Release 安装包
 
 先通过 `gh auth login` 登录具备仓库访问权限的 GitHub 账号，再下载版本包：
 
 ```bash
-gh release download v0.1.0 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
+gh release download v0.1.1 --repo xsy-tech/supplier-agent-skill --dir ./supplier-release
 cd supplier-release
 shasum -a 256 -c checksums.txt  # Linux 也可使用 sha256sum -c checksums.txt
 ```
