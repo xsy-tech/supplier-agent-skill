@@ -14,7 +14,7 @@ func Files() (map[string][]byte, error) {
 		if walkErr != nil {
 			return walkErr
 		}
-		if entry.IsDir() || (path != "SKILL.md" && !strings.HasPrefix(path, "references/") && path != "agents/openai.yaml") {
+		if entry.IsDir() || (path != "SKILL.md" && !strings.HasPrefix(path, "references/") && path != "agents/openai.yaml" && path != "scripts/fabric_inventory_excel.py") {
 			return nil
 		}
 		content, err := fs.ReadFile(bundle.SkillFS, path)

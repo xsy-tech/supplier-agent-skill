@@ -116,7 +116,7 @@ func loadEntries(options Options) ([]archiveEntry, error) {
 	}
 	// Bundle offline resources without changing the canonical base-file order.
 	var extras []archiveEntry
-	for _, name := range []string{"SKILL.md", "agents", "docs", "references"} {
+	for _, name := range []string{"SKILL.md", "agents", "docs", "references", "scripts/fabric_inventory_excel.py"} {
 		base := filepath.Join(sourceDir, name)
 		if _, err := os.Lstat(base); os.IsNotExist(err) {
 			continue

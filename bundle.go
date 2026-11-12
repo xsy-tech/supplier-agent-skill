@@ -9,7 +9,7 @@ var ManifestJSON []byte
 
 // SkillFS contains the shared Skill instructions installed for supported agents.
 //
-//go:embed SKILL.md references/*.md agents/openai.yaml
+//go:embed SKILL.md references/*.md agents/openai.yaml scripts/fabric_inventory_excel.py
 var SkillFS embed.FS
 
 // ConnectorFS contains the WorkBuddy connector templates.
