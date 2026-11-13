@@ -441,7 +441,7 @@ func expectedArchiveEntries(t *testing.T, archiveName string) []expectedArchiveE
 func offlineResourceFiles(t *testing.T) []string {
 	t.Helper()
 	var names []string
-	for _, root := range []string{"SKILL.md", "agents", "docs", "references"} {
+	for _, root := range []string{"SKILL.md", "agents", "docs", "references", "scripts/fabric_inventory_excel.py"} {
 		err := filepath.Walk(root, func(name string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err

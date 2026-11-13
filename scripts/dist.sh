@@ -33,6 +33,8 @@ for target in "${targets[@]}"; do
   )
   cp "$root/README.md" "$root/README.en.md" "$root/LICENSE" "$root/manifest.json" "$package_dir/"
   cp -R "$root/SKILL.md" "$root/agents" "$root/docs" "$root/references" "$package_dir/"
+  mkdir -p "$package_dir/scripts"
+  cp "$root/scripts/fabric_inventory_excel.py" "$package_dir/scripts/"
   if [[ "$os" == "windows" ]]; then
     archive_format=zip
     archive_path="$dist/$name.zip"
